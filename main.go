@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const version string = "1.0.0"
+const version string = "1.0.1"
 
 func main() {
 	logger := utils.ConfigZap()
