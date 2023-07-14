@@ -12,8 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const version string = "1.0.1"
-
 func main() {
 	logger := utils.ConfigZap()
 	addr := os.Getenv("ADDRESS")
@@ -25,7 +23,13 @@ func main() {
 	r := gin.New()
 	r.SetTrustedProxies(nil)
 
-	logger.Infof("Loading version...%s", version)
+	version, err := os.ReadFile("VERSION")
+	if err != nil {
+		logger.Errorf("Loading version...FAILED: %s", err)
+	} else {
+		logger.Infof("Loading version...%s", version)
+	}
+
 	//Handle request methods
 	r.GET("/ping", pkg.Ping)
 	r.POST("/publish", func(c *gin.Context) {
