@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"vngitPub/pkg"
 	"vngitPub/pkg/controller"
 	"vngitPub/pkg/utils"
 
@@ -30,8 +29,6 @@ func main() {
 		logger.Infof("Loading version...%s", version)
 	}
 
-	//Handle request methods
-	r.GET("/ping", pkg.Ping)
 	r.POST("/publish", func(c *gin.Context) {
 		body, err := c.GetRawData()
 		if err != nil {
@@ -42,8 +39,30 @@ func main() {
 		controller.PostHandler(body)
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
+	r.GET("/healthz", func (c *gin.Context)  {
+		rabbitMQRunning := controller.ValidateRabbitMQConnection()
 
-	//Run server
-	logger.Infof("[*] Listening on %s", info)
-	r.Run(info)
+		if !rabbitMQRunning {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Cannot connect to RabbitMQ"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "OK"})
+	})
+	r.GET("/livez", func (c *gin.Context)  {
+		c.JSON(http.StatusOK, gin.H{"message": "OK"})
+	})
+	r.GET("/readyz", func (c *gin.Context)  {
+		rabbitMQRunning := controller.ValidateRabbitMQConnection()
+
+		if !rabbitMQRunning {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Cannot connect to RabbitMQ"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "OK"})
+	})
+
+	if controller.ValidateRabbitMQConnection() {
+		logger.Infof("[*] Listening on %s", info)
+		r.Run(info)
+	}
 }

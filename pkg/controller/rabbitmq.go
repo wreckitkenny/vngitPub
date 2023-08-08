@@ -10,6 +10,25 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
+//ValidateRabbitMQConnection makes a connection to RabbitMQ
+func ValidateRabbitMQConnection() bool {
+	logger := utils.ConfigZap()
+
+	address := os.Getenv("ADDRESSRB")
+	username := os.Getenv("USERRB")
+	password := os.Getenv("PASSRB")
+	port := os.Getenv("PORTRB")
+	var _amqp string = fmt.Sprintf("amqp://%s:%s@%s:%s/", username, password, address, port)
+
+	//Connect RabbitMQ Instance
+	_, err := amqp.Dial(_amqp)
+	if err != nil {
+		logger.Errorf("Connecting to RabbitMQ...FAILED: %s", err)
+		return false
+	}
+	// logger.Info("Connecting to RabbitMQ...OK")
+	return true
+}
 
 //SendToQueue - Send POST data to RabbitMQ
 func SendToQueue(body []byte) {
