@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.4] | 2023-08-29
+### Added/Removed
+### Changed
+### Fixed
+- Fixed checking health not closing
+
 ## [1.0.3] | 2023-08-08
 ### Added/Removed
 - Added healthcheck endpoints

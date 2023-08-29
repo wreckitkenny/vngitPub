@@ -21,11 +21,12 @@ func ValidateRabbitMQConnection() bool {
 	var _amqp string = fmt.Sprintf("amqp://%s:%s@%s:%s/", username, password, address, port)
 
 	//Connect RabbitMQ Instance
-	_, err := amqp.Dial(_amqp)
+	conn, err := amqp.Dial(_amqp)
 	if err != nil {
 		logger.Errorf("Connecting to RabbitMQ...FAILED: %s", err)
 		return false
 	}
+	defer conn.Close()
 	// logger.Info("Connecting to RabbitMQ...OK")
 	return true
 }
