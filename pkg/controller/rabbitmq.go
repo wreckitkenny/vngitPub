@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"vngitPub/pkg/utils"
+	"github.com/wreckitkenny/vngitpub/pkg/utils"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )

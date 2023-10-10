@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"vngitPub/model"
+	"github.com/wreckitkenny/vngitpub/model"
 	"github.com/spf13/viper"
 )
 

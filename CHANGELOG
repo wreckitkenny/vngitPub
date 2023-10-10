@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.5] | 2023-10-10
+### Added/Removed
+- Added a handler to manage routes
+- Added a new endpoint to handle result getting processes
+- Added a graceful shutdown while running listening endpoint
+- Added CorsMiddleware to handle Cors policy on server
+- Removed redudant modules handling indirect requests internally
+### Changed
+- Changed root package from local to github link
+- Moved version getting module to a separate module file
+### Fixed
+
 ## [1.0.4] | 2023-08-29
 ### Added/Removed
 ### Changed
