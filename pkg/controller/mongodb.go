@@ -10,14 +10,20 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // State structs deployment status
 type State struct {
-	Image		string	`bson:"image,omitempty"`
-	Cluster		string	`bson:"cluster,omitempty"`
-	BlobName 	string	`bson:"blob,omitempty"`
-	Status		string	`bson:"status,omitempty"`
+	ID    		primitive.ObjectID 	`bson:"_id" json:"id,omitempty"`
+	Image		string				`bson:"image" json:"image,omitempty"`
+	OldTag		string				`bson:"oldtag" json:"oldtag,omitempty"`
+	NewTag		string				`bson:"newtag" json:"newtag,omitempty"`
+	Cluster		string				`bson:"cluster" json:"cluster,omitempty"`
+	BlobName 	string				`bson:"blob" json:"blob,omitempty"`
+	Time 		string				`bson:"time" json:"time,omitempty"`
+	Status		string				`bson:"status" json:"status,omitempty"`
+	Metadata	string				`bson:"metadata" json:"metadata,omitempty"`
 }
 
 func connectMongo() (*mongo.Client, string, ) {
