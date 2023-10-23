@@ -24,15 +24,18 @@ func NewHandler(c *Config) {
 
 	r := c.R
 
-    r.POST("/publish", h.Publish)
-	r.GET("/loadState", h.LoadState)
+    r.POST("/publish", h.HandlePublish)
+	r.GET("/loadState", h.HandleLoadState)
+	r.POST("/login", h.HandleLogin)
+
+	// Healthcheck
 	r.GET("/healthz", h.Healthz)
 	r.GET("/livez", h.Livez)
 	r.GET("/readyz", h.Readyz)
 }
 
-// Publish handles incoming requests
-func (h *Handler) Publish(c *gin.Context) {
+// HandlePublish handles incoming requests
+func (h *Handler) HandlePublish(c *gin.Context) {
 	logger := utils.ConfigZap()
 	body, err := c.GetRawData()
 	if err != nil {
@@ -44,10 +47,27 @@ func (h *Handler) Publish(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
 
-func (h *Handler) LoadState(c *gin.Context) {
+// HandleLoadState returns all stored data in DB
+func (h *Handler) HandleLoadState(c *gin.Context) {
 	states := LoadState()
 
 	c.JSON(http.StatusOK, states)
+}
+
+// HandleLogin authenticates users
+func (h *Handler) HandleLogin(c *gin.Context) {
+	token, msg := Login(c)
+
+	if token == "" {
+		c.JSON(http.StatusOK, map[string]string{
+			"msg": msg,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{
+		"token": token,
+	})
 }
 
 // Healthz returns /healthz status
