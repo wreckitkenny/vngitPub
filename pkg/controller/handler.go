@@ -27,6 +27,7 @@ func NewHandler(c *Config) {
     r.POST("/publish", h.HandlePublish)
 	r.GET("/loadState", h.HandleLoadState)
 	r.POST("/login", h.HandleLogin)
+	r.POST("/signup", h.HandleSignup)
 
 	// Healthcheck
 	r.GET("/healthz", h.Healthz)
@@ -54,20 +55,35 @@ func (h *Handler) HandleLoadState(c *gin.Context) {
 	c.JSON(http.StatusOK, states)
 }
 
-// HandleLogin authenticates users
-func (h *Handler) HandleLogin(c *gin.Context) {
-	token, msg := Login(c)
-
-	if token == "" {
+// HandleSignup authenticates users
+func (h *Handler) HandleSignup(c *gin.Context) {
+	logger := utils.ConfigZap()
+	msg, err := SignUp(c)
+	if err != nil {
+		logger.Warn(msg)
+		logger.Errorf("Signing up a new user...FAILED: %s", err)
 		c.JSON(http.StatusOK, map[string]string{
-			"msg": msg,
+			"Msg": msg,
 		})
-		return
 	}
 
 	c.JSON(http.StatusOK, map[string]string{
-		"token": token,
+		"Msg": msg,
 	})
+}
+
+// HandleLogin authenticates users
+func (h *Handler) HandleLogin(c *gin.Context) {
+	token := Login(c)
+	if token != "" {
+		c.JSON(http.StatusOK, map[string]string{
+			"token": token,
+		})
+	} else {
+		c.JSON(http.StatusOK, map[string]string{
+			"msg": "Incorrect login credentials. Please try again.",
+		})
+	}
 }
 
 // Healthz returns /healthz status

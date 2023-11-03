@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/wreckitkenny/vngitpub/pkg/utils"
+	"github.com/wreckitkenny/vngitpub/model"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // State structs deployment status
@@ -91,4 +92,40 @@ func LoadState() []State {
 	}
 
 	return states
+}
+
+// SaveUser writes a new user information to collection
+func SaveUser(username string, email string, encodedPass string, fullname string, department string, role string) error {
+	client, mongoDBName := connectMongo()
+
+	coll := client.Database(mongoDBName).Collection("users")
+	newUser := model.User{Username: username, Email: email, Password: encodedPass, FullName: fullname, Department: department, Role: role}
+
+	_, err := coll.InsertOne(context.TODO(), newUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FindUser queries collection users for user information
+func FindUser(key string, value string,) (model.User, error) {
+	logger := utils.ConfigZap()
+	client, mongoDBName := connectMongo()
+
+	coll := client.Database(mongoDBName).Collection("users")
+	filter := bson.D{{Key: key, Value: value}}
+
+	var result model.User
+	err := coll.FindOne(context.TODO(), filter).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			logger.Debug(err)
+			return result, err
+		}
+	}
+
+	return result, nil
 }

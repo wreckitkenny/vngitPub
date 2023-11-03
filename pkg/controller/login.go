@@ -1,55 +1,62 @@
 package controller
 
 import (
-	"regexp"
+	"crypto/sha256"
+	"encoding/base64"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/wreckitkenny/vngitpub/model"
 	"github.com/wreckitkenny/vngitpub/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-type User struct {
-	Username string `"json:username"`
-	Password string `"json:password"`
-}
-
-func Login(c *gin.Context) (string, string) {
+// Login handles user input for login
+func Login(c *gin.Context) (string) {
 	logger := utils.ConfigZap()
-	var user User
+	var user model.User
 	if err := c.BindJSON(&user); err != nil {
 		logger.Error(err)
 	}
 
 	username := user.Username
-	// password := user.Password
+	password := user.Password
 
-	matched := usernameValidator(username)
-	if !matched {
-		logger.Warn("Username must be ended with @vnpay.vn")
-		return "", "Username must be ended with @vnpay.vn"
-	}
-
-	// if err := passwordValidator(password); err != nil {
-	// 	logger.Errorf("Validating password...FAILED: %s", err)
-	// }
-
-	return "abcxyz", ""
-}
-
-func usernameValidator(username string) (bool) {
-	logger := utils.ConfigZap()
-	matched, err := regexp.MatchString(`[a-z0-9(.)?]+\@vnpay.vn`, username)
+	userResult, err := FindUser("username", username)
 	if err != nil {
-		logger.Error(err)
+		logger.Errorf("Account with username %s not found", username)
+		return ""
 	}
 
-	if !matched {
-		return matched
+	// Password check
+	h := sha256.New()
+	h.Write([]byte(password + "tobtignv"))
+	hashedPass := h.Sum(nil)
+	encodedPass := base64.URLEncoding.EncodeToString(hashedPass)
+
+	if encodedPass != userResult.Password {
+		logger.Errorf("Password of username %s is not matched", username)
+		return ""
 	}
 
-	return matched
+	// Create token
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	// Set claims
+	claims := token.Claims.(jwt.MapClaims)
+	claims["email"] = userResult.Email
+	claims["fullname"] = userResult.FullName
+	claims["role"] = userResult.Role
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+
+	// Generate encoded token and send it as response.
+	t, err := token.SignedString([]byte("nekottobtignv"))
+	if err != nil {
+		logger.Errorf("Failed to generate an user token: %s", err)
+		return ""
+	}
+
+	return t
 }
-
-// func passwordValidator(username string) (re bool, err error) {
-	
-// }
