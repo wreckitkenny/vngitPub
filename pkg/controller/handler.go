@@ -28,6 +28,7 @@ func NewHandler(c *Config) {
 	r.GET("/loadState", h.HandleLoadState)
 	r.POST("/login", h.HandleLogin)
 	r.POST("/signup", h.HandleSignup)
+	r.GET("/statistic", h.HandleStatistic)
 
 	// Healthcheck
 	r.GET("/healthz", h.Healthz)
@@ -50,9 +51,13 @@ func (h *Handler) HandlePublish(c *gin.Context) {
 
 // HandleLoadState returns all stored data in DB
 func (h *Handler) HandleLoadState(c *gin.Context) {
-	states := LoadState()
-
-	c.JSON(http.StatusOK, states)
+	bearer := c.Request.Header["Authorization"]
+	isValid, err := utils.IsValidToken(bearer)
+	if !isValid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error":err})
+	} else {
+		c.JSON(http.StatusOK, LoadState())
+	}
 }
 
 // HandleSignup authenticates users
@@ -82,6 +87,21 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, map[string]string{
 			"msg": "Incorrect login credentials. Please try again.",
+		})
+	}
+}
+
+// HandleStatistic handles today's
+func (h *Handler) HandleStatistic(c *gin.Context) {
+	bearer := c.Request.Header["Authorization"]
+	isValid, err := utils.IsValidToken(bearer)
+	if !isValid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	} else {
+		c.JSON(http.StatusOK, map[string]interface{} {
+			"total": Total(),
+			"today": Today(),
+			"graph": Graph(),
 		})
 	}
 }

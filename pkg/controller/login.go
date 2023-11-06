@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/wreckitkenny/vngitpub/model"
 	"github.com/wreckitkenny/vngitpub/pkg/utils"
 
@@ -13,7 +13,7 @@ import (
 )
 
 // Login handles user input for login
-func Login(c *gin.Context) (string) {
+func Login(c *gin.Context) string {
 	logger := utils.ConfigZap()
 	var user model.User
 	if err := c.BindJSON(&user); err != nil {

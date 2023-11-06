@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/wreckitkenny/vngitpub/pkg/utils"
 	"github.com/wreckitkenny/vngitpub/model"
+	"github.com/wreckitkenny/vngitpub/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -78,6 +78,29 @@ func LoadState() []State {
 
 	coll := client.Database(mongoDBName).Collection("status")
 	filter := bson.D{}
+
+	cursor, err := coll.Find(context.TODO(), filter)
+	if err != nil {
+		logger.Errorf("Loading states from MongoDB...FAILED: %s", err)
+	} else {
+		logger.Debug("Loading states from MongoDB...OK")
+	}
+
+	var states []State
+	if err = cursor.All(context.TODO(), &states); err != nil {
+		logger.Debugf("Getting all documents from MongoDB...FAILED: %s", err)
+	}
+
+	return states
+}
+
+// RegexFind loads documents using regex
+func RegexFind(pattern string) []State {
+	logger := utils.ConfigZap()
+	client, mongoDBName := connectMongo()
+
+	coll := client.Database(mongoDBName).Collection("status")
+	filter := bson.D{{Key: "time", Value: primitive.Regex{Pattern: pattern, Options: ""}}}
 
 	cursor, err := coll.Find(context.TODO(), filter)
 	if err != nil {
