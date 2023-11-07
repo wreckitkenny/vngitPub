@@ -22,7 +22,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.SetTrustedProxies(nil)
-	router.Use(controller.CORSMiddleware())
+	// router.Use(controller.CORSMiddleware())
 	utils.GetVersion()
 	controller.ValidateMongoConnection()
 
