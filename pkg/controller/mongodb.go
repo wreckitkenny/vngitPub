@@ -47,11 +47,11 @@ func connectMongo() (*mongo.Client, string, ) {
 	if err != nil {
 		logger.Errorf("Connecting to MongoDB...FAILED: %s", err)
 	}
-	// defer func() {
-	// 	if err = client.Disconnect(context.TODO()); err != nil {
-	// 		log.Panic(err)
-	// 	}
-	// }()
+	defer func() {
+		if err = client.Disconnect(context.TODO()); err != nil {
+			logger.Panicf("Shutting down MongoDB Connection: %s", err)
+		}
+	}()
 
 	return client, mongoDBName
 }
