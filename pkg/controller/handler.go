@@ -24,15 +24,20 @@ func NewHandler(c *Config) {
 
 	r := c.R
 
-    r.POST("/publish", h.Publish)
-	r.GET("/loadState", h.LoadState)
+    r.POST("/publish", h.HandlePublish)
+	r.GET("/loadState", h.HandleLoadState)
+	r.POST("/login", h.HandleLogin)
+	r.POST("/signup", h.HandleSignup)
+	r.GET("/statistic", h.HandleStatistic)
+
+	// Healthcheck
 	r.GET("/healthz", h.Healthz)
 	r.GET("/livez", h.Livez)
 	r.GET("/readyz", h.Readyz)
 }
 
-// Publish handles incoming requests
-func (h *Handler) Publish(c *gin.Context) {
+// HandlePublish handles incoming requests
+func (h *Handler) HandlePublish(c *gin.Context) {
 	logger := utils.ConfigZap()
 	body, err := c.GetRawData()
 	if err != nil {
@@ -44,10 +49,61 @@ func (h *Handler) Publish(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
 
-func (h *Handler) LoadState(c *gin.Context) {
-	states := LoadState()
+// HandleLoadState returns all stored data in DB
+func (h *Handler) HandleLoadState(c *gin.Context) {
+	bearer := c.Request.Header["Authorization"]
+	isValid, err := utils.IsValidToken(bearer)
+	if !isValid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error":err})
+	} else {
+		c.JSON(http.StatusOK, LoadState())
+	}
+}
 
-	c.JSON(http.StatusOK, states)
+// HandleSignup authenticates users
+func (h *Handler) HandleSignup(c *gin.Context) {
+	logger := utils.ConfigZap()
+	msg, err := SignUp(c)
+	if err != nil {
+		logger.Warn(msg)
+		logger.Errorf("Signing up a new user...FAILED: %s", err)
+		c.JSON(http.StatusOK, map[string]string{
+			"Msg": msg,
+		})
+	}
+
+	c.JSON(http.StatusOK, map[string]string{
+		"Msg": msg,
+	})
+}
+
+// HandleLogin authenticates users
+func (h *Handler) HandleLogin(c *gin.Context) {
+	token := Login(c)
+	if token != "" {
+		c.JSON(http.StatusOK, map[string]string{
+			"token": token,
+		})
+	} else {
+		c.JSON(http.StatusOK, map[string]string{
+			"msg": "Incorrect login credentials. Please try again.",
+		})
+	}
+}
+
+// HandleStatistic handles today's
+func (h *Handler) HandleStatistic(c *gin.Context) {
+	bearer := c.Request.Header["Authorization"]
+	isValid, err := utils.IsValidToken(bearer)
+	if !isValid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	} else {
+		c.JSON(http.StatusOK, map[string]interface{} {
+			"total": Total(),
+			"today": Today(),
+			"graph": Graph(),
+		})
+	}
 }
 
 // Healthz returns /healthz status
