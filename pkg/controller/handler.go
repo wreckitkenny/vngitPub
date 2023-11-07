@@ -24,6 +24,7 @@ func NewHandler(c *Config) {
 
 	r := c.R
 
+	r.GET("/ping", h.HandlePing)
     r.POST("/publish", h.HandlePublish)
 	r.GET("/loadState", h.HandleLoadState)
 	r.POST("/login", h.HandleLogin)
@@ -34,6 +35,11 @@ func NewHandler(c *Config) {
 	r.GET("/healthz", h.Healthz)
 	r.GET("/livez", h.Livez)
 	r.GET("/readyz", h.Readyz)
+}
+
+// HandlePing handles /ping
+func (h *Handler) HandlePing(c *gin.Context) {
+	c.JSON(http.StatusOK, "pong!!!")
 }
 
 // HandlePublish handles incoming requests

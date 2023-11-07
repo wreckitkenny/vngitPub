@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.7] | 2023-11-07
+### Added/Removed
+- Added /ping to check
+- Removed pull_request github action
+### Changed
+### Fixed
+
 ## [1.0.6] | 2023-10-23
 ### Added/Removed
 - Added a handler to handle login/signup
