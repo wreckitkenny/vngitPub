@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -17,12 +18,15 @@ import (
 
 func main() {
 	logger := utils.ConfigZap()
+	enableCors, _ := strconv.Atoi(os.Getenv("CORSONSERVER"))
 
 	//Configure GIN
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.SetTrustedProxies(nil)
-	// router.Use(controller.CORSMiddleware())
+	if enableCors == 1 {
+		router.Use(controller.CORSMiddleware())
+	}
 	utils.GetVersion()
 	controller.ValidateMongoConnection()
 
