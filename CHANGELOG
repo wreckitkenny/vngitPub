@@ -3,8 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.0.9] | 2023-11-07
+## [1.0.9] | 2023-11-08
 ### Added/Removed
+- Added option for Cors on server
 ### Changed
 ### Fixed
 - Fixed error MongoDB not closing connection

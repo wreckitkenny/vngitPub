@@ -47,19 +47,23 @@ func connectMongo() (*mongo.Client, string, ) {
 	if err != nil {
 		logger.Errorf("Connecting to MongoDB...FAILED: %s", err)
 	}
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			logger.Panicf("Shutting down MongoDB Connection: %s", err)
-		}
-	}()
 
 	return client, mongoDBName
+}
+
+func deferMongo(client *mongo.Client) {
+	logger := utils.ConfigZap()
+	if err := client.Disconnect(context.TODO()); err != nil {
+		logger.Panicf("Closing MongoDB connection...FAILED: %s", err)
+	}
 }
 
 // ValidateMongoConnection makes sure that the connection to Mongo works
 func ValidateMongoConnection() {
 	logger := utils.ConfigZap()
 	client, mongoDBName := connectMongo()
+	defer deferMongo(client)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	// Check connection to MongoDB
@@ -75,6 +79,7 @@ func ValidateMongoConnection() {
 func LoadState() []State {
 	logger := utils.ConfigZap()
 	client, mongoDBName := connectMongo()
+	defer deferMongo(client)
 
 	coll := client.Database(mongoDBName).Collection("status")
 	filter := bson.D{}
@@ -98,6 +103,7 @@ func LoadState() []State {
 func RegexFind(pattern string) []State {
 	logger := utils.ConfigZap()
 	client, mongoDBName := connectMongo()
+	defer deferMongo(client)
 
 	coll := client.Database(mongoDBName).Collection("status")
 	filter := bson.D{{Key: "time", Value: primitive.Regex{Pattern: pattern, Options: ""}}}
@@ -120,6 +126,7 @@ func RegexFind(pattern string) []State {
 // SaveUser writes a new user information to collection
 func SaveUser(username string, email string, encodedPass string, fullname string, department string, role string) error {
 	client, mongoDBName := connectMongo()
+	defer deferMongo(client)
 
 	coll := client.Database(mongoDBName).Collection("users")
 	newUser := model.User{Username: username, Email: email, Password: encodedPass, FullName: fullname, Department: department, Role: role}
@@ -136,6 +143,7 @@ func SaveUser(username string, email string, encodedPass string, fullname string
 func FindUser(key string, value string,) (model.User, error) {
 	logger := utils.ConfigZap()
 	client, mongoDBName := connectMongo()
+	defer deferMongo(client)
 
 	coll := client.Database(mongoDBName).Collection("users")
 	filter := bson.D{{Key: key, Value: value}}
