@@ -114,12 +114,6 @@ func (h *Handler) HandleStatistic(c *gin.Context) {
 
 // Healthz returns /healthz status
 func (h *Handler) Healthz(c *gin.Context)  {
-	rabbitMQRunning := ValidateRabbitMQConnection()
-
-	if !rabbitMQRunning {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Cannot connect to RabbitMQ"})
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{"message": "OK"})
 }
 
